@@ -4,32 +4,23 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>PromptForge — AI Prompt Enhancer</title>
+  <link rel="icon" type="image/png" href="logo.png" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
-<!-- ─────────────────────────────────────────── API Key Modal -->
+<!-- ─────────────────────────────────────────── API Key Modal (manual open only) -->
 <div class="modal-overlay hidden" id="modal-overlay">
   <div class="modal">
-    <div class="modal-title">API Key Required</div>
+    <div class="modal-title">🔑 Manage API Keys</div>
     <div class="modal-body">
-      PromptForge uses the Anthropic API to enhance your prompts. Your key is stored
-      only in your browser's local storage and never sent anywhere except Anthropic.
-      <br><br>
-      Get a key at <a href="https://console.anthropic.com" target="_blank" rel="noopener">console.anthropic.com</a>.
+      Your keys are stored only in your browser's local storage and never sent anywhere except the respective AI provider.
     </div>
-    <input
-      id="api-key-input"
-      class="modal-input"
-      type="password"
-      placeholder="sk-ant-…"
-      autocomplete="off"
-      spellcheck="false"
-    />
-    <div class="modal-note">Stored locally in your browser. Never transmitted elsewhere.</div>
+    <div class="api-key-list" id="api-key-list">
+      <!-- Populated by JS -->
+    </div>
     <div class="modal-footer">
-      <button class="modal-btn" id="cancel-key-btn">Cancel</button>
-      <button class="modal-btn primary" id="save-key-btn">Save &amp; Continue</button>
+      <button class="modal-btn" id="cancel-key-btn">Close</button>
     </div>
   </div>
 </div>
@@ -40,15 +31,15 @@
   <!-- Top bar -->
   <header class="topbar">
     <div class="topbar-brand">
-      <div class="topbar-logo">⚡</div>
+      <img src="logo.png" class="topbar-logo-img" alt="PromptForge logo" />
       <span class="topbar-title">PromptForge</span>
       <span class="topbar-subtitle">/ AI Prompt Enhancer</span>
     </div>
     <div style="display:flex; align-items:center; gap:10px;">
-      <span class="topbar-badge">CLAUDE SONNET</span>
+      <span class="topbar-badge" id="model-badge">NO MODEL</span>
       <button
         id="open-key-btn"
-        title="Set API Key"
+        title="Manage API Keys"
         style="background:none; border:none; cursor:pointer; font-size:18px; color:var(--ghost); line-height:1; padding:4px;"
       >🔑</button>
     </div>
@@ -226,7 +217,7 @@
       <!-- Forge button — pinned to bottom -->
       <div class="forge-section">
         <button id="forge-btn">
-          <span class="btn-icon">⚡</span>
+          <img src="logo.png" class="btn-logo" alt="" />
           <span id="forge-btn-text">Forge Prompt</span>
         </button>
       </div>
@@ -255,11 +246,11 @@
       <!-- Output body -->
       <div class="output-body" id="output-body">
         <div class="empty-state">
-          <div class="empty-icon">⚡</div>
+          <img src="logo.png" class="empty-logo" alt="PromptForge" />
           <div class="empty-title">Ready to forge</div>
           <div class="empty-sub">
             Write your prompt, pick a target model, configure options,
-            then hit <strong style="color:var(--violet2)">Forge Prompt</strong>.
+            then hit <strong style="color:var(--purple2)">Forge Prompt</strong>.
             Your enhanced prompt will appear here.
           </div>
         </div>

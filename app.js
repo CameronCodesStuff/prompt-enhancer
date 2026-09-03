@@ -1,13 +1,19 @@
-/* PromptForge — app.js */
+/* PromptForge — app.js (black & purple edition) */
 'use strict';
 
 // ── Model Database ─────────────────────────────────────────────────
-// color: provider accent hex for the dot
+// provider: label shown in UI
+// apiProvider: which API family this model uses (determines which key is needed)
+// keyPlaceholder: hint text for the API key input
 
 const MODEL_GROUPS = [
   {
     provider: 'Anthropic',
     color: '#C97E4E',
+    apiProvider: 'anthropic',
+    keyLabel: 'Anthropic API Key',
+    keyPlaceholder: 'sk-ant-…',
+    keyUrl: 'https://console.anthropic.com',
     models: [
       { name: 'Claude Opus 4',          tags: ['new','reason','vision','code'] },
       { name: 'Claude Sonnet 4.5',      tags: ['new','vision','code','fast'] },
@@ -25,6 +31,10 @@ const MODEL_GROUPS = [
   {
     provider: 'OpenAI',
     color: '#10A37F',
+    apiProvider: 'openai',
+    keyLabel: 'OpenAI API Key',
+    keyPlaceholder: 'sk-…',
+    keyUrl: 'https://platform.openai.com/api-keys',
     models: [
       { name: 'GPT-4o',                 tags: ['vision','audio','code'] },
       { name: 'GPT-4o mini',            tags: ['fast','vision'] },
@@ -50,6 +60,10 @@ const MODEL_GROUPS = [
   {
     provider: 'Google DeepMind',
     color: '#4285F4',
+    apiProvider: 'google',
+    keyLabel: 'Google AI API Key',
+    keyPlaceholder: 'AIza…',
+    keyUrl: 'https://aistudio.google.com/app/apikey',
     models: [
       { name: 'Gemini 2.5 Pro',         tags: ['new','reason','vision','code'] },
       { name: 'Gemini 2.5 Flash',       tags: ['new','fast','vision','reason'] },
@@ -73,6 +87,10 @@ const MODEL_GROUPS = [
   {
     provider: 'Meta',
     color: '#0866FF',
+    apiProvider: 'meta',
+    keyLabel: 'Meta / Llama API Key',
+    keyPlaceholder: 'Enter key…',
+    keyUrl: 'https://llama.meta.com',
     models: [
       { name: 'Llama 4 Scout',          tags: ['new','open','fast','vision'] },
       { name: 'Llama 4 Maverick',       tags: ['new','open','vision'] },
@@ -93,6 +111,10 @@ const MODEL_GROUPS = [
   {
     provider: 'Mistral AI',
     color: '#FF7000',
+    apiProvider: 'mistral',
+    keyLabel: 'Mistral API Key',
+    keyPlaceholder: 'Enter key…',
+    keyUrl: 'https://console.mistral.ai/api-keys',
     models: [
       { name: 'Mistral Large 2',        tags: ['code'] },
       { name: 'Mistral Medium 3',       tags: ['new'] },
@@ -110,6 +132,10 @@ const MODEL_GROUPS = [
   {
     provider: 'xAI',
     color: '#1DA1F2',
+    apiProvider: 'xai',
+    keyLabel: 'xAI API Key',
+    keyPlaceholder: 'xai-…',
+    keyUrl: 'https://console.x.ai',
     models: [
       { name: 'Grok 3',                 tags: ['new','vision','code'] },
       { name: 'Grok 3 mini',            tags: ['new','fast','reason'] },
@@ -122,6 +148,10 @@ const MODEL_GROUPS = [
   {
     provider: 'DeepSeek',
     color: '#5B6BF8',
+    apiProvider: 'deepseek',
+    keyLabel: 'DeepSeek API Key',
+    keyPlaceholder: 'sk-…',
+    keyUrl: 'https://platform.deepseek.com',
     models: [
       { name: 'DeepSeek R2',            tags: ['new','reason','code'] },
       { name: 'DeepSeek R1',            tags: ['open','reason','code'] },
@@ -136,6 +166,10 @@ const MODEL_GROUPS = [
   {
     provider: 'Cohere',
     color: '#39594D',
+    apiProvider: 'cohere',
+    keyLabel: 'Cohere API Key',
+    keyPlaceholder: 'Enter key…',
+    keyUrl: 'https://dashboard.cohere.com/api-keys',
     models: [
       { name: 'Command R+',             tags: ['code'] },
       { name: 'Command R',              tags: ['fast'] },
@@ -148,6 +182,10 @@ const MODEL_GROUPS = [
   {
     provider: 'Microsoft',
     color: '#00A4EF',
+    apiProvider: 'azure',
+    keyLabel: 'Azure / Microsoft API Key',
+    keyPlaceholder: 'Enter key…',
+    keyUrl: 'https://azure.microsoft.com/en-us/products/ai-services',
     models: [
       { name: 'Phi-4',                  tags: ['open','reason','fast'] },
       { name: 'Phi-3.5 MoE',           tags: ['open','fast'] },
@@ -162,6 +200,10 @@ const MODEL_GROUPS = [
   {
     provider: 'Alibaba',
     color: '#FF6A00',
+    apiProvider: 'alibaba',
+    keyLabel: 'Alibaba / Qwen API Key',
+    keyPlaceholder: 'Enter key…',
+    keyUrl: 'https://dashscope.aliyun.com',
     models: [
       { name: 'Qwen3 235B-A22B',        tags: ['new','open','reason'] },
       { name: 'Qwen3 32B',              tags: ['new','open','reason'] },
@@ -176,60 +218,12 @@ const MODEL_GROUPS = [
     ],
   },
   {
-    provider: '01.AI',
-    color: '#7B61FF',
-    models: [
-      { name: 'Yi-Large',               tags: [] },
-      { name: 'Yi-34B',                 tags: ['open'] },
-      { name: 'Yi-1.5 34B',            tags: ['open'] },
-      { name: 'Yi-Lightning',           tags: ['fast'] },
-    ],
-  },
-  {
-    provider: 'Inflection',
-    color: '#F02849',
-    models: [
-      { name: 'Inflection-3 Productivity', tags: [] },
-      { name: 'Inflection-3 Pi',        tags: [] },
-      { name: 'Inflection-2.5',         tags: [] },
-    ],
-  },
-  {
-    provider: 'AI21 Labs',
-    color: '#8247E5',
-    models: [
-      { name: 'Jamba 1.5 Large',        tags: [] },
-      { name: 'Jamba 1.5 Mini',         tags: ['fast'] },
-      { name: 'Jamba Instruct',         tags: [] },
-      { name: 'J2 Ultra',               tags: [] },
-      { name: 'J2 Mid',                 tags: [] },
-    ],
-  },
-  {
-    provider: 'Perplexity',
-    color: '#20B2AA',
-    models: [
-      { name: 'Sonar Large',            tags: [] },
-      { name: 'Sonar Small',            tags: ['fast'] },
-      { name: 'Sonar Pro',              tags: [] },
-      { name: 'Sonar Reasoning',        tags: ['reason'] },
-      { name: 'Sonar Reasoning Pro',    tags: ['reason'] },
-    ],
-  },
-  {
-    provider: 'Together AI',
-    color: '#6366F1',
-    models: [
-      { name: 'DBRX Instruct',          tags: ['open'] },
-      { name: 'Falcon 180B',            tags: ['open'] },
-      { name: 'Falcon 40B',             tags: ['open','fast'] },
-      { name: 'Platypus2 70B',          tags: ['open'] },
-      { name: 'Alpaca 7B',              tags: ['open','fast'] },
-    ],
-  },
-  {
     provider: 'Stability AI',
     color: '#8B5CF6',
+    apiProvider: 'stability',
+    keyLabel: 'Stability AI API Key',
+    keyPlaceholder: 'sk-…',
+    keyUrl: 'https://platform.stability.ai/account/keys',
     models: [
       { name: 'Stable Diffusion 3.5 Large',   tags: ['image'] },
       { name: 'Stable Diffusion 3.5 Medium',  tags: ['image','fast'] },
@@ -243,6 +237,10 @@ const MODEL_GROUPS = [
   {
     provider: 'Midjourney',
     color: '#EBB434',
+    apiProvider: 'midjourney',
+    keyLabel: 'Midjourney API Key',
+    keyPlaceholder: 'Enter key…',
+    keyUrl: 'https://www.midjourney.com',
     models: [
       { name: 'Midjourney v7',          tags: ['new','image'] },
       { name: 'Midjourney v6.1',        tags: ['image'] },
@@ -255,6 +253,10 @@ const MODEL_GROUPS = [
   {
     provider: 'Black Forest Labs',
     color: '#22C55E',
+    apiProvider: 'bfl',
+    keyLabel: 'Black Forest Labs API Key',
+    keyPlaceholder: 'Enter key…',
+    keyUrl: 'https://api.bfl.ml',
     models: [
       { name: 'FLUX 1.1 Pro Ultra',     tags: ['new','image'] },
       { name: 'FLUX 1.1 Pro',           tags: ['image'] },
@@ -264,18 +266,27 @@ const MODEL_GROUPS = [
     ],
   },
   {
-    provider: 'Runway',
-    color: '#FF4500',
+    provider: 'Perplexity',
+    color: '#20B2AA',
+    apiProvider: 'perplexity',
+    keyLabel: 'Perplexity API Key',
+    keyPlaceholder: 'pplx-…',
+    keyUrl: 'https://www.perplexity.ai/settings/api',
     models: [
-      { name: 'Gen-4',                  tags: ['new','image'] },
-      { name: 'Gen-3 Alpha Turbo',      tags: ['image','fast'] },
-      { name: 'Gen-3 Alpha',            tags: ['image'] },
-      { name: 'Gen-2',                  tags: ['image'] },
+      { name: 'Sonar Large',            tags: [] },
+      { name: 'Sonar Small',            tags: ['fast'] },
+      { name: 'Sonar Pro',              tags: [] },
+      { name: 'Sonar Reasoning',        tags: ['reason'] },
+      { name: 'Sonar Reasoning Pro',    tags: ['reason'] },
     ],
   },
   {
     provider: 'ElevenLabs',
     color: '#FF6B35',
+    apiProvider: 'elevenlabs',
+    keyLabel: 'ElevenLabs API Key',
+    keyPlaceholder: 'Enter key…',
+    keyUrl: 'https://elevenlabs.io/app/settings/api-keys',
     models: [
       { name: 'Eleven Multilingual v3', tags: ['new','audio'] },
       { name: 'Eleven Multilingual v2', tags: ['audio'] },
@@ -285,8 +296,26 @@ const MODEL_GROUPS = [
     ],
   },
   {
+    provider: 'Runway',
+    color: '#FF4500',
+    apiProvider: 'runway',
+    keyLabel: 'Runway API Key',
+    keyPlaceholder: 'Enter key…',
+    keyUrl: 'https://app.runwayml.com',
+    models: [
+      { name: 'Gen-4',                  tags: ['new','image'] },
+      { name: 'Gen-3 Alpha Turbo',      tags: ['image','fast'] },
+      { name: 'Gen-3 Alpha',            tags: ['image'] },
+      { name: 'Gen-2',                  tags: ['image'] },
+    ],
+  },
+  {
     provider: 'Amazon',
     color: '#FF9900',
+    apiProvider: 'aws',
+    keyLabel: 'AWS / Bedrock Key',
+    keyPlaceholder: 'Enter key…',
+    keyUrl: 'https://aws.amazon.com/bedrock',
     models: [
       { name: 'Nova Premier',           tags: ['new','vision'] },
       { name: 'Nova Pro',               tags: ['new','vision'] },
@@ -298,48 +327,12 @@ const MODEL_GROUPS = [
     ],
   },
   {
-    provider: 'Apple',
-    color: '#A0A0A0',
-    models: [
-      { name: 'Apple Intelligence (Writing)', tags: ['fast'] },
-      { name: 'Apple Intelligence (Summaries)', tags: ['fast'] },
-      { name: 'OpenELM 3B',             tags: ['open','fast'] },
-      { name: 'OpenELM 1.1B',           tags: ['open','fast'] },
-    ],
-  },
-  {
-    provider: 'Hugging Face',
-    color: '#FFD21E',
-    models: [
-      { name: 'SmolLM2 1.7B',          tags: ['open','fast'] },
-      { name: 'Zephyr 7B Beta',         tags: ['open','fast'] },
-      { name: 'StarCoder2 15B',         tags: ['open','code'] },
-      { name: 'Starcoder 7B',           tags: ['open','code','fast'] },
-      { name: 'OpenAssistant 30B',      tags: ['open'] },
-      { name: 'Bloom 176B',             tags: ['open'] },
-    ],
-  },
-  {
-    provider: 'NovaSky / Berkeley',
-    color: '#003262',
-    models: [
-      { name: 'Sky-T1-32B',             tags: ['open','reason'] },
-      { name: 'Skywork-o1 Preview',     tags: ['open','reason'] },
-    ],
-  },
-  {
-    provider: 'Nvidia',
-    color: '#76B900',
-    models: [
-      { name: 'Nemotron 4 340B',        tags: ['open'] },
-      { name: 'Nemotron-Mini 4B',       tags: ['open','fast'] },
-      { name: 'Llama 3.1 Nemotron 70B', tags: ['open','reason'] },
-      { name: 'Mistral Nemo Minitron',  tags: ['open','fast'] },
-    ],
-  },
-  {
     provider: 'Groq',
     color: '#F55036',
+    apiProvider: 'groq',
+    keyLabel: 'Groq API Key',
+    keyPlaceholder: 'gsk_…',
+    keyUrl: 'https://console.groq.com/keys',
     models: [
       { name: 'Llama 3.3 70B (Groq)',   tags: ['fast'] },
       { name: 'Llama 3.1 8B (Groq)',    tags: ['fast'] },
@@ -350,39 +343,36 @@ const MODEL_GROUPS = [
   {
     provider: 'Cerebras',
     color: '#EB5757',
+    apiProvider: 'cerebras',
+    keyLabel: 'Cerebras API Key',
+    keyPlaceholder: 'Enter key…',
+    keyUrl: 'https://cloud.cerebras.ai',
     models: [
       { name: 'Llama 3.3 70B (Cerebras)', tags: ['fast'] },
       { name: 'Llama 3.1 8B (Cerebras)',  tags: ['fast'] },
     ],
   },
   {
-    provider: 'Writer',
-    color: '#7B5EA7',
+    provider: 'Nvidia',
+    color: '#76B900',
+    apiProvider: 'nvidia',
+    keyLabel: 'NVIDIA API Key',
+    keyPlaceholder: 'nvapi-…',
+    keyUrl: 'https://build.nvidia.com',
     models: [
-      { name: 'Palmyra X5',             tags: ['new'] },
-      { name: 'Palmyra X4',             tags: [] },
-      { name: 'Palmyra Creative',       tags: [] },
-    ],
-  },
-  {
-    provider: 'Adept',
-    color: '#4F46E5',
-    models: [
-      { name: 'Fuyu-8B',               tags: ['open','vision','fast'] },
-    ],
-  },
-  {
-    provider: 'Reka',
-    color: '#06B6D4',
-    models: [
-      { name: 'Reka Core',              tags: ['vision'] },
-      { name: 'Reka Flash',             tags: ['fast','vision'] },
-      { name: 'Reka Edge',              tags: ['fast'] },
+      { name: 'Nemotron 4 340B',        tags: ['open'] },
+      { name: 'Nemotron-Mini 4B',       tags: ['open','fast'] },
+      { name: 'Llama 3.1 Nemotron 70B', tags: ['open','reason'] },
+      { name: 'Mistral Nemo Minitron',  tags: ['open','fast'] },
     ],
   },
   {
     provider: 'Other / Custom',
     color: '#6B7280',
+    apiProvider: 'custom',
+    keyLabel: 'Custom API Key',
+    keyPlaceholder: 'Enter key…',
+    keyUrl: null,
     models: [
       { name: 'Custom / Local model',    tags: [] },
       { name: 'Ollama (local)',          tags: ['open','fast'] },
@@ -395,12 +385,24 @@ const MODEL_GROUPS = [
 
 // ── State ──────────────────────────────────────────────────────────
 
+// API keys stored per apiProvider: localStorage key = `pf_key_<apiProvider>`
 const state = {
-  apiKey: localStorage.getItem('pf_api_key') || '',
   lastResult: null,
   isLoading: false,
-  selectedModel: null,  // { provider, name, tags }
+  selectedModel: null,  // { provider, apiProvider, name, tags, color, keyLabel, keyPlaceholder, keyUrl }
 };
+
+function getKey(apiProvider) {
+  return localStorage.getItem(`pf_key_${apiProvider}`) || '';
+}
+
+function saveKey(apiProvider, key) {
+  if (key) {
+    localStorage.setItem(`pf_key_${apiProvider}`, key);
+  } else {
+    localStorage.removeItem(`pf_key_${apiProvider}`);
+  }
+}
 
 // ── DOM refs ───────────────────────────────────────────────────────
 
@@ -417,10 +419,10 @@ const dom = {
   copyBtn:        $('copy-btn'),
   exportBtn:      $('export-btn'),
   modalOverlay:   $('modal-overlay'),
-  apiKeyInput:    $('api-key-input'),
-  saveKeyBtn:     $('save-key-btn'),
-  cancelKeyBtn:   $('cancel-key-btn'),
   openKeyBtn:     $('open-key-btn'),
+  apiKeyList:     $('api-key-list'),
+  cancelKeyBtn:   $('cancel-key-btn'),
+  modelBadge:     $('model-badge'),
   // Model picker
   modelSearch:    $('model-search'),
   modelSearchClear: $('model-search-clear'),
@@ -459,8 +461,6 @@ function buildModelList(filter = '') {
 
     const groupEl = document.createElement('div');
     groupEl.className = 'model-group';
-
-    const isSelected = matchedModels.some(m => state.selectedModel?.name === m.name);
 
     const header = document.createElement('div');
     header.className = 'model-group-header';
@@ -509,7 +509,15 @@ function buildModelList(filter = '') {
 }
 
 function selectModel(group, model) {
-  state.selectedModel = { provider: group.provider, color: group.color, ...model };
+  state.selectedModel = {
+    provider: group.provider,
+    color: group.color,
+    apiProvider: group.apiProvider,
+    keyLabel: group.keyLabel,
+    keyPlaceholder: group.keyPlaceholder,
+    keyUrl: group.keyUrl,
+    ...model
+  };
 
   // Update chip
   dom.chipProvider.textContent = group.provider;
@@ -521,14 +529,87 @@ function selectModel(group, model) {
   dom.modelSearch.value = '';
   dom.modelSearchClear.classList.add('hidden');
 
-  // Re-highlight selected item
+  // Update topbar badge
+  dom.modelBadge.textContent = model.name.toUpperCase();
+
+  // Show inline API key entry if no key set for this provider
+  showInlineApiKeyIfNeeded(group);
+
+  // Re-build to show selected state
   buildModelList('');
+}
+
+// Inline API key row shown below the model chip when a model is selected
+function showInlineApiKeyIfNeeded(group) {
+  // Remove any existing inline key row
+  const existing = document.getElementById('inline-api-row');
+  if (existing) existing.remove();
+
+  const key = getKey(group.apiProvider);
+  const row = document.createElement('div');
+  row.id = 'inline-api-row';
+  row.className = 'model-api-row';
+
+  const hasKey = !!key;
+  const keyUrl = group.keyUrl ? ` · <a href="${group.keyUrl}" target="_blank" rel="noopener" style="color:var(--purple3)">Get key</a>` : '';
+
+  row.innerHTML = `
+    <div class="model-api-label">${escHtml(group.keyLabel)}${keyUrl}</div>
+    <div class="model-api-input-row">
+      <input
+        class="model-api-input"
+        type="password"
+        id="inline-api-input"
+        placeholder="${escHtml(group.keyPlaceholder)}"
+        autocomplete="off"
+        spellcheck="false"
+        value="${hasKey ? '••••••••••••' : ''}"
+      />
+      <button class="model-api-save" id="inline-api-save">Save</button>
+    </div>
+    <div class="model-api-status ${hasKey ? 'saved' : ''}" id="inline-api-status">
+      ${hasKey ? '✓ Key saved' : 'No key set — paste your key above'}
+    </div>
+  `;
+
+  // Insert after model chip
+  dom.modelChip.after(row);
+
+  const input = document.getElementById('inline-api-input');
+  const saveBtn = document.getElementById('inline-api-save');
+  const status = document.getElementById('inline-api-status');
+
+  // Clear placeholder on focus if showing dots
+  input.addEventListener('focus', () => {
+    if (getKey(group.apiProvider)) input.value = '';
+  });
+
+  saveBtn.addEventListener('click', () => {
+    const val = input.value.trim();
+    if (!val || val.startsWith('•')) {
+      status.className = 'model-api-status error';
+      status.textContent = 'Paste your actual key first';
+      return;
+    }
+    saveKey(group.apiProvider, val);
+    status.className = 'model-api-status saved';
+    status.textContent = '✓ Key saved';
+    input.value = '••••••••••••';
+    setStatus('ready', 'API key saved — ready to forge');
+  });
+
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter') saveBtn.click();
+  });
 }
 
 dom.chipClear.addEventListener('click', () => {
   state.selectedModel = null;
   dom.modelChip.classList.remove('visible');
   dom.modelList.classList.remove('collapsed');
+  dom.modelBadge.textContent = 'NO MODEL';
+  const existing = document.getElementById('inline-api-row');
+  if (existing) existing.remove();
   buildModelList('');
 });
 
@@ -546,42 +627,82 @@ dom.modelSearchClear.addEventListener('click', () => {
   dom.modelSearch.focus();
 });
 
-// ── API Key modal ──────────────────────────────────────────────────
+// ── API Key modal (manual, shows all providers) ────────────────────
 
-function showModal() {
-  dom.modalOverlay.classList.remove('hidden');
-  dom.apiKeyInput.value = state.apiKey;
-  dom.apiKeyInput.focus();
-}
+function buildKeyModal() {
+  dom.apiKeyList.innerHTML = '';
 
-function hideModal() {
-  dom.modalOverlay.classList.add('hidden');
-}
+  // Only show providers that have been used or that have a key set
+  const relevantGroups = MODEL_GROUPS.filter(g => getKey(g.apiProvider));
 
-dom.openKeyBtn.addEventListener('click', showModal);
-
-dom.saveKeyBtn.addEventListener('click', () => {
-  const key = dom.apiKeyInput.value.trim();
-  if (!key.startsWith('sk-')) {
-    dom.apiKeyInput.style.borderColor = 'var(--red)';
-    setTimeout(() => (dom.apiKeyInput.style.borderColor = ''), 1000);
+  if (relevantGroups.length === 0) {
+    dom.apiKeyList.innerHTML = '<div style="font-family:var(--font-mono);font-size:11px;color:var(--ghost);padding:8px 0;">No keys saved yet. Select a model to add your key.</div>';
     return;
   }
-  state.apiKey = key;
-  localStorage.setItem('pf_api_key', key);
-  hideModal();
-  setStatus('ready', 'API key saved');
+
+  relevantGroups.forEach(group => {
+    const key = getKey(group.apiProvider);
+    const item = document.createElement('div');
+    item.className = 'api-key-item';
+
+    item.innerHTML = `
+      <div class="api-key-item-header">
+        <span class="api-key-item-dot" style="background:${group.color}"></span>
+        <span class="api-key-item-name">${escHtml(group.provider)}</span>
+        <span class="api-key-item-status ${key ? 'set' : ''}">${key ? 'KEY SET' : 'NOT SET'}</span>
+      </div>
+      <div class="api-key-input-row">
+        <input
+          class="api-key-input"
+          type="password"
+          data-provider="${escHtml(group.apiProvider)}"
+          placeholder="${escHtml(group.keyPlaceholder)}"
+          autocomplete="off"
+          value="${key ? '••••••••••••' : ''}"
+        />
+        <button class="api-key-save-btn" data-provider="${escHtml(group.apiProvider)}">Save</button>
+        ${key ? `<button class="api-key-clear-btn" data-provider="${escHtml(group.apiProvider)}">Clear</button>` : ''}
+      </div>
+    `;
+
+    const input = item.querySelector('.api-key-input');
+    const saveBtn = item.querySelector('.api-key-save-btn');
+    const clearBtn = item.querySelector('.api-key-clear-btn');
+
+    input.addEventListener('focus', () => {
+      if (getKey(group.apiProvider)) input.value = '';
+    });
+
+    saveBtn.addEventListener('click', () => {
+      const val = input.value.trim();
+      if (val && !val.startsWith('•')) {
+        saveKey(group.apiProvider, val);
+        buildKeyModal();
+      }
+    });
+
+    if (clearBtn) {
+      clearBtn.addEventListener('click', () => {
+        saveKey(group.apiProvider, '');
+        buildKeyModal();
+      });
+    }
+
+    dom.apiKeyList.appendChild(item);
+  });
+}
+
+dom.openKeyBtn.addEventListener('click', () => {
+  buildKeyModal();
+  dom.modalOverlay.classList.remove('hidden');
 });
 
-dom.cancelKeyBtn.addEventListener('click', hideModal);
+dom.cancelKeyBtn.addEventListener('click', () => {
+  dom.modalOverlay.classList.add('hidden');
+});
 
 dom.modalOverlay.addEventListener('click', e => {
-  if (e.target === dom.modalOverlay) hideModal();
-});
-
-dom.apiKeyInput.addEventListener('keydown', e => {
-  if (e.key === 'Enter') dom.saveKeyBtn.click();
-  if (e.key === 'Escape') hideModal();
+  if (e.target === dom.modalOverlay) dom.modalOverlay.classList.add('hidden');
 });
 
 // ── Char counter ───────────────────────────────────────────────────
@@ -682,8 +803,8 @@ Do not hedge. Do not be vague. Make the forged prompt extraordinary.`;
 function strengthColor(score) {
   if (score < 30) return 'var(--red)';
   if (score < 55) return 'var(--amber)';
-  if (score < 80) return 'var(--cyan)';
-  return 'var(--green)';
+  if (score < 80) return 'var(--purple2)';
+  return '#7BE47B';
 }
 
 function renderResult(data, opts) {
@@ -744,7 +865,7 @@ function renderResult(data, opts) {
       ${data.suggestedModel ? `
       <div class="result-section">
         <div class="result-section-title">Model Recommendation</div>
-        <div class="result-text" style="color:var(--cyan2); font-family:var(--font-mono); font-size:13px;">${escHtml(data.suggestedModel)}</div>
+        <div class="result-text" style="color:var(--purple3); font-family:var(--font-mono); font-size:13px;">${escHtml(data.suggestedModel)}</div>
       </div>` : ''}
     </div>
   `;
@@ -780,7 +901,27 @@ async function forge() {
     setTimeout(() => (dom.promptInput.style.borderColor = ''), 900);
     return;
   }
-  if (!state.apiKey) { showModal(); return; }
+
+  // Check model selected
+  if (!state.selectedModel) {
+    dom.modelSearch.focus();
+    setStatus('error', 'Pick a target model first');
+    return;
+  }
+
+  // Check API key for this provider
+  const apiKey = getKey(state.selectedModel.apiProvider);
+  if (!apiKey) {
+    const input = document.getElementById('inline-api-input');
+    if (input) {
+      input.focus();
+      input.style.borderColor = 'var(--red)';
+      setTimeout(() => (input.style.borderColor = ''), 900);
+    }
+    setStatus('error', `Add your ${state.selectedModel.keyLabel} first`);
+    return;
+  }
+
   if (state.isLoading) return;
 
   state.isLoading = true;
@@ -806,7 +947,7 @@ async function forge() {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': state.apiKey,
+        'x-api-key': apiKey,
         'anthropic-version': '2023-06-01',
         'anthropic-dangerous-direct-browser-access': 'true',
       },
@@ -909,13 +1050,7 @@ dom.exportBtn.addEventListener('click', () => {
 
 (function init() {
   buildModelList();
-
-  if (!state.apiKey) {
-    setStatus('', 'No API key — click the key icon');
-    showModal();
-  } else {
-    setStatus('ready', 'Ready');
-  }
+  setStatus('', 'Select a model to get started');
 
   const examples = [
     'Make me a landing page for my SaaS product',
