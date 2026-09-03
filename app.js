@@ -459,8 +459,13 @@ function buildModelList(filter = '') {
     if (!matchedModels.length) return;
     totalShown += matchedModels.length;
 
+    const isSelectedGroup = group.models.some(m => state.selectedModel?.name === m.name);
+    const isFirstGroup = totalShown === matchedModels.length; // true only for the first group
+    // Collapse by default unless: actively searching, or this is the selected group, or it's the first group
+    const startCollapsed = !q && !isSelectedGroup && !isFirstGroup;
+
     const groupEl = document.createElement('div');
-    groupEl.className = 'model-group';
+    groupEl.className = 'model-group' + (startCollapsed ? ' collapsed' : '');
 
     const header = document.createElement('div');
     header.className = 'model-group-header';
