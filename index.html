@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PromptForge — AI Prompt Enhancer</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- ─────────────────────────────────────────── API Key Modal -->
+<div class="modal-overlay hidden" id="modal-overlay">
+  <div class="modal">
+    <div class="modal-title">API Key Required</div>
+    <div class="modal-body">
+      PromptForge uses the Anthropic API to enhance your prompts. Your key is stored
+      only in your browser's local storage and never sent anywhere except Anthropic.
+      <br><br>
+      Get a key at <a href="https://console.anthropic.com" target="_blank" rel="noopener">console.anthropic.com</a>.
+    </div>
+    <input
+      id="api-key-input"
+      class="modal-input"
+      type="password"
+      placeholder="sk-ant-…"
+      autocomplete="off"
+      spellcheck="false"
+    />
+    <div class="modal-note">Stored locally in your browser. Never transmitted elsewhere.</div>
+    <div class="modal-footer">
+      <button class="modal-btn" id="cancel-key-btn">Cancel</button>
+      <button class="modal-btn primary" id="save-key-btn">Save &amp; Continue</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────────────────────────────────────── App Shell -->
+<div class="app">
+
+  <!-- Top bar -->
+  <header class="topbar">
+    <div class="topbar-brand">
+      <div class="topbar-logo">⚡</div>
+      <span class="topbar-title">PromptForge</span>
+      <span class="topbar-subtitle">/ AI Prompt Enhancer</span>
+    </div>
+    <div style="display:flex; align-items:center; gap:10px;">
+      <span class="topbar-badge">CLAUDE SONNET</span>
+      <button
+        id="open-key-btn"
+        title="Set API Key"
+        style="background:none; border:none; cursor:pointer; font-size:18px; color:var(--ghost); line-height:1; padding:4px;"
+      >🔑</button>
+    </div>
+  </header>
+
+  <!-- Workspace -->
+  <div class="workspace">
+
+    <!-- ── Left Panel ── -->
+    <aside class="panel-left">
+
+      <div class="panel-scroll">
+
+        <!-- Prompt input -->
+        <div class="prompt-wrap">
+          <div class="prompt-label">Your Prompt</div>
+          <textarea
+            id="prompt-input"
+            placeholder='e.g. "Make me a landing page for my SaaS product"'
+            spellcheck="true"
+          ></textarea>
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-family:var(--font-mono); font-size:10px; color:var(--muted);">⌘↵ to forge</span>
+            <span id="char-count" class="char-count">0 chars</span>
+          </div>
+        </div>
+
+        <!-- Output format & Graphic style -->
+        <div class="panel-section">
+          <div class="section-label">Output &amp; Visuals</div>
+          <div class="options-grid">
+
+            <div class="option-group">
+              <label class="option-label">Output format</label>
+              <select id="opt-output" class="option-select">
+                <option value="Single HTML file">Single HTML file</option>
+                <option value="ZIP (HTML + CSS + JS)">ZIP (HTML+CSS+JS)</option>
+                <option value="React component">React component</option>
+                <option value="Vue component">Vue component</option>
+                <option value="Python script">Python script</option>
+                <option value="CLI tool">CLI tool</option>
+                <option value="REST API">REST API</option>
+                <option value="Markdown document">Markdown doc</option>
+                <option value="Figma design spec">Figma spec</option>
+                <option value="Midjourney image">Midjourney image</option>
+              </select>
+            </div>
+
+            <div class="option-group">
+              <label class="option-label">Graphic style</label>
+              <select id="opt-graphic" class="option-select">
+                <option value="Modern minimal">Modern minimal</option>
+                <option value="Glassmorphism">Glassmorphism</option>
+                <option value="Brutalist">Brutalist</option>
+                <option value="Neumorphism">Neumorphism</option>
+                <option value="Cyberpunk / Neon">Cyberpunk / Neon</option>
+                <option value="Corporate clean">Corporate clean</option>
+                <option value="Editorial / Print">Editorial / Print</option>
+                <option value="Retro / Y2K">Retro / Y2K</option>
+                <option value="Material Design">Material Design</option>
+                <option value="No visual preference">No preference</option>
+              </select>
+            </div>
+
+            <div class="option-group">
+              <label class="option-label">Target audience</label>
+              <select id="opt-audience" class="option-select">
+                <option value="General consumers">General consumers</option>
+                <option value="Developers / engineers">Developers</option>
+                <option value="Designers / creatives">Designers</option>
+                <option value="Business / enterprise">Business</option>
+                <option value="Students / educators">Students</option>
+                <option value="Children (under 12)">Children</option>
+                <option value="Senior users (65+)">Seniors</option>
+                <option value="Healthcare professionals">Healthcare</option>
+              </select>
+            </div>
+
+            <div class="option-group">
+              <label class="option-label">Complexity</label>
+              <select id="opt-complexity" class="option-select">
+                <option value="Simple / beginner-friendly">Simple</option>
+                <option value="Intermediate" selected>Intermediate</option>
+                <option value="Advanced / expert-level">Advanced</option>
+                <option value="Production-ready / enterprise">Production</option>
+              </select>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Tone -->
+        <div class="panel-section">
+          <div class="section-label">Tone</div>
+          <div class="toggle-group tone-toggle">
+            <button class="toggle-btn" data-value="casual">Casual</button>
+            <button class="toggle-btn active" data-value="balanced">Balanced</button>
+            <button class="toggle-btn" data-value="professional">Pro</button>
+            <button class="toggle-btn" data-value="technical">Technical</button>
+          </div>
+        </div>
+
+        <!-- Feature flags -->
+        <div class="panel-section">
+          <div class="section-label">Require in Output</div>
+          <div class="checkbox-group">
+
+            <label class="checkbox-row">
+              <input type="checkbox" id="chk-responsive" checked />
+              <span class="checkbox-box"></span>
+              <span class="checkbox-text">Responsive layout</span>
+            </label>
+
+            <label class="checkbox-row">
+              <input type="checkbox" id="chk-animations" />
+              <span class="checkbox-box"></span>
+              <span class="checkbox-text">Animations &amp; transitions</span>
+            </label>
+
+            <label class="checkbox-row">
+              <input type="checkbox" id="chk-accessible" checked />
+              <span class="checkbox-box"></span>
+              <span class="checkbox-text">Accessibility (WCAG AA)</span>
+            </label>
+
+            <label class="checkbox-row">
+              <input type="checkbox" id="chk-darkmode" />
+              <span class="checkbox-box"></span>
+              <span class="checkbox-text">Dark mode support</span>
+            </label>
+
+            <label class="checkbox-row">
+              <input type="checkbox" id="chk-interactive" />
+              <span class="checkbox-box"></span>
+              <span class="checkbox-text">Rich interactivity</span>
+            </label>
+
+            <label class="checkbox-row">
+              <input type="checkbox" id="chk-comments" />
+              <span class="checkbox-box"></span>
+              <span class="checkbox-text">Code comments</span>
+            </label>
+
+          </div>
+        </div>
+
+      </div><!-- /panel-scroll -->
+
+      <!-- Forge button — pinned to bottom -->
+      <div class="forge-section">
+        <button id="forge-btn">
+          <span class="btn-icon">⚡</span>
+          <span id="forge-btn-text">Forge Prompt</span>
+        </button>
+      </div>
+
+    </aside>
+
+    <!-- ── Right Panel ── -->
+    <main class="panel-right">
+
+      <!-- Output topbar -->
+      <div class="output-topbar">
+        <div class="output-status">
+          <div class="status-dot" id="status-dot"></div>
+          <span id="status-text">Waiting…</span>
+        </div>
+        <div class="output-actions">
+          <button class="action-btn" id="copy-btn" disabled>
+            <span>⧉</span> Copy
+          </button>
+          <button class="action-btn" id="export-btn" disabled>
+            <span>↓</span> Export .txt
+          </button>
+        </div>
+      </div>
+
+      <!-- Output body -->
+      <div class="output-body" id="output-body">
+        <div class="empty-state">
+          <div class="empty-icon">⚡</div>
+          <div class="empty-title">Ready to forge</div>
+          <div class="empty-sub">
+            Write your prompt on the left, configure your options,
+            then hit <strong style="color:var(--violet2)">Forge Prompt</strong>.
+            Your enhanced prompt will appear here.
+          </div>
+        </div>
+      </div>
+
+    </main>
+
+  </div><!-- /workspace -->
+</div><!-- /app -->
+
+<script src="app.js"></script>
+</body>
+</html>
