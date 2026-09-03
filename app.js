@@ -385,22 +385,25 @@ const MODEL_GROUPS = [
 
 // ── State ──────────────────────────────────────────────────────────
 
-// API keys stored per apiProvider: localStorage key = `pf_key_<apiProvider>`
+// PromptForge always uses Claude (Anthropic) as the forging engine.
+// The selected model is the *target* model the forged prompt is optimised for.
+// One Anthropic key is stored under the key 'pf_forge_key'.
+
 const state = {
   lastResult: null,
   isLoading: false,
-  selectedModel: null,  // { provider, apiProvider, name, tags, color, keyLabel, keyPlaceholder, keyUrl }
+  selectedModel: null,  // { provider, apiProvider, name, tags, color, … }
 };
 
-function getKey(apiProvider) {
-  return localStorage.getItem(`pf_key_${apiProvider}`) || '';
+function getKey() {
+  return localStorage.getItem('pf_forge_key') || '';
 }
 
-function saveKey(apiProvider, key) {
+function saveKey(key) {
   if (key) {
-    localStorage.setItem(`pf_key_${apiProvider}`, key);
+    localStorage.setItem('pf_forge_key', key);
   } else {
-    localStorage.removeItem(`pf_key_${apiProvider}`);
+    localStorage.removeItem('pf_forge_key');
   }
 }
 
@@ -537,43 +540,45 @@ function selectModel(group, model) {
   // Update topbar badge
   dom.modelBadge.textContent = model.name.toUpperCase();
 
-  // Show inline API key entry if no key set for this provider
-  showInlineApiKeyIfNeeded(group);
+  // Show the single Anthropic forge key field if not yet saved
+  showInlineApiKeyIfNeeded();
 
   // Re-build to show selected state
   buildModelList('');
 }
 
-// Inline API key row shown below the model chip when a model is selected
-function showInlineApiKeyIfNeeded(group) {
+// Inline API key row — always shows the single Anthropic forge key
+function showInlineApiKeyIfNeeded() {
   // Remove any existing inline key row
   const existing = document.getElementById('inline-api-row');
   if (existing) existing.remove();
 
-  const key = getKey(group.apiProvider);
+  const key = getKey();
+  // If a key is already saved, no need to show the row again
+  if (key) {
+    setStatus('ready', 'Ready to forge');
+    return;
+  }
+
   const row = document.createElement('div');
   row.id = 'inline-api-row';
   row.className = 'model-api-row';
 
-  const hasKey = !!key;
-  const keyUrl = group.keyUrl ? ` · <a href="${group.keyUrl}" target="_blank" rel="noopener" style="color:var(--purple3)">Get key</a>` : '';
-
   row.innerHTML = `
-    <div class="model-api-label">${escHtml(group.keyLabel)}${keyUrl}</div>
+    <div class="model-api-label">Anthropic API Key (powers PromptForge) · <a href="https://console.anthropic.com" target="_blank" rel="noopener" style="color:var(--purple3)">Get key</a></div>
     <div class="model-api-input-row">
       <input
         class="model-api-input"
         type="password"
         id="inline-api-input"
-        placeholder="${escHtml(group.keyPlaceholder)}"
+        placeholder="sk-ant-…"
         autocomplete="off"
         spellcheck="false"
-        value="${hasKey ? '••••••••••••' : ''}"
       />
       <button class="model-api-save" id="inline-api-save">Save</button>
     </div>
-    <div class="model-api-status ${hasKey ? 'saved' : ''}" id="inline-api-status">
-      ${hasKey ? '✓ Key saved' : 'No key set — paste your key above'}
+    <div class="model-api-status" id="inline-api-status">
+      No key set — paste your Anthropic key above
     </div>
   `;
 
@@ -584,11 +589,6 @@ function showInlineApiKeyIfNeeded(group) {
   const saveBtn = document.getElementById('inline-api-save');
   const status = document.getElementById('inline-api-status');
 
-  // Clear placeholder on focus if showing dots
-  input.addEventListener('focus', () => {
-    if (getKey(group.apiProvider)) input.value = '';
-  });
-
   saveBtn.addEventListener('click', () => {
     const val = input.value.trim();
     if (!val || val.startsWith('•')) {
@@ -596,10 +596,12 @@ function showInlineApiKeyIfNeeded(group) {
       status.textContent = 'Paste your actual key first';
       return;
     }
-    saveKey(group.apiProvider, val);
+    saveKey(val);
     status.className = 'model-api-status saved';
     status.textContent = '✓ Key saved';
     input.value = '••••••••••••';
+    // Remove the row now that key is saved
+    setTimeout(() => { const r = document.getElementById('inline-api-row'); if (r) r.remove(); }, 800);
     setStatus('ready', 'API key saved — ready to forge');
   });
 
@@ -636,65 +638,59 @@ dom.modelSearchClear.addEventListener('click', () => {
 
 function buildKeyModal() {
   dom.apiKeyList.innerHTML = '';
+  const key = getKey();
 
-  // Only show providers that have been used or that have a key set
-  const relevantGroups = MODEL_GROUPS.filter(g => getKey(g.apiProvider));
+  const item = document.createElement('div');
+  item.className = 'api-key-item';
 
-  if (relevantGroups.length === 0) {
-    dom.apiKeyList.innerHTML = '<div style="font-family:var(--font-mono);font-size:11px;color:var(--ghost);padding:8px 0;">No keys saved yet. Select a model to add your key.</div>';
-    return;
+  item.innerHTML = `
+    <div class="api-key-item-header">
+      <span class="api-key-item-dot" style="background:#C97E4E"></span>
+      <span class="api-key-item-name">Anthropic (PromptForge engine)</span>
+      <span class="api-key-item-status ${key ? 'set' : ''}">${key ? 'KEY SET' : 'NOT SET'}</span>
+    </div>
+    <div style="font-family:var(--font-mono);font-size:10px;color:var(--ghost);margin-bottom:4px;">
+      PromptForge uses Claude to forge prompts for any target model. Only one key needed.
+      <a href="https://console.anthropic.com" target="_blank" rel="noopener" style="color:var(--purple3)">Get key →</a>
+    </div>
+    <div class="api-key-input-row">
+      <input
+        class="api-key-input"
+        type="password"
+        id="modal-api-input"
+        placeholder="sk-ant-…"
+        autocomplete="off"
+        value="${key ? '••••••••••••' : ''}"
+      />
+      <button class="api-key-save-btn" id="modal-api-save">Save</button>
+      ${key ? `<button class="api-key-clear-btn" id="modal-api-clear">Clear</button>` : ''}
+    </div>
+  `;
+
+  const input = item.querySelector('#modal-api-input');
+  const saveBtn = item.querySelector('#modal-api-save');
+  const clearBtn = item.querySelector('#modal-api-clear');
+
+  input.addEventListener('focus', () => {
+    if (getKey()) input.value = '';
+  });
+
+  saveBtn.addEventListener('click', () => {
+    const val = input.value.trim();
+    if (val && !val.startsWith('•')) {
+      saveKey(val);
+      buildKeyModal();
+    }
+  });
+
+  if (clearBtn) {
+    clearBtn.addEventListener('click', () => {
+      saveKey('');
+      buildKeyModal();
+    });
   }
 
-  relevantGroups.forEach(group => {
-    const key = getKey(group.apiProvider);
-    const item = document.createElement('div');
-    item.className = 'api-key-item';
-
-    item.innerHTML = `
-      <div class="api-key-item-header">
-        <span class="api-key-item-dot" style="background:${group.color}"></span>
-        <span class="api-key-item-name">${escHtml(group.provider)}</span>
-        <span class="api-key-item-status ${key ? 'set' : ''}">${key ? 'KEY SET' : 'NOT SET'}</span>
-      </div>
-      <div class="api-key-input-row">
-        <input
-          class="api-key-input"
-          type="password"
-          data-provider="${escHtml(group.apiProvider)}"
-          placeholder="${escHtml(group.keyPlaceholder)}"
-          autocomplete="off"
-          value="${key ? '••••••••••••' : ''}"
-        />
-        <button class="api-key-save-btn" data-provider="${escHtml(group.apiProvider)}">Save</button>
-        ${key ? `<button class="api-key-clear-btn" data-provider="${escHtml(group.apiProvider)}">Clear</button>` : ''}
-      </div>
-    `;
-
-    const input = item.querySelector('.api-key-input');
-    const saveBtn = item.querySelector('.api-key-save-btn');
-    const clearBtn = item.querySelector('.api-key-clear-btn');
-
-    input.addEventListener('focus', () => {
-      if (getKey(group.apiProvider)) input.value = '';
-    });
-
-    saveBtn.addEventListener('click', () => {
-      const val = input.value.trim();
-      if (val && !val.startsWith('•')) {
-        saveKey(group.apiProvider, val);
-        buildKeyModal();
-      }
-    });
-
-    if (clearBtn) {
-      clearBtn.addEventListener('click', () => {
-        saveKey(group.apiProvider, '');
-        buildKeyModal();
-      });
-    }
-
-    dom.apiKeyList.appendChild(item);
-  });
+  dom.apiKeyList.appendChild(item);
 }
 
 dom.openKeyBtn.addEventListener('click', () => {
@@ -914,16 +910,18 @@ async function forge() {
     return;
   }
 
-  // Check API key for this provider
-  const apiKey = getKey(state.selectedModel.apiProvider);
+  // Check for the single Anthropic forge key
+  const apiKey = getKey();
   if (!apiKey) {
+    // Show the key row if not already visible
+    showInlineApiKeyIfNeeded();
     const input = document.getElementById('inline-api-input');
     if (input) {
       input.focus();
       input.style.borderColor = 'var(--red)';
       setTimeout(() => (input.style.borderColor = ''), 900);
     }
-    setStatus('error', `Add your ${state.selectedModel.keyLabel} first`);
+    setStatus('error', 'Add your Anthropic API key first');
     return;
   }
 
@@ -1055,7 +1053,7 @@ dom.exportBtn.addEventListener('click', () => {
 
 (function init() {
   buildModelList();
-  setStatus('', 'Select a model to get started');
+  setStatus('', getKey() ? 'Select a target model to get started' : 'Add your Anthropic API key to get started');
 
   const examples = [
     'Make me a landing page for my SaaS product',
