@@ -76,6 +76,30 @@
           </div>
         </div>
 
+        <!-- Target Model -->
+        <div class="panel-section">
+          <div class="section-label">Target Model</div>
+          <div class="model-picker-wrap">
+            <div class="model-search-row">
+              <input
+                id="model-search"
+                class="model-search-input"
+                type="text"
+                placeholder="Search models…"
+                autocomplete="off"
+                spellcheck="false"
+              />
+              <button id="model-search-clear" class="model-search-clear hidden">✕</button>
+            </div>
+            <div id="model-selected-chip" class="model-selected-chip">
+              <span id="model-chip-provider" class="chip-provider"></span>
+              <span id="model-chip-name" class="chip-name">No model selected</span>
+              <button id="model-chip-clear" class="chip-clear" title="Clear selection">✕</button>
+            </div>
+            <div id="model-list" class="model-list"></div>
+          </div>
+        </div>
+
         <!-- Output format & Graphic style -->
         <div class="panel-section">
           <div class="section-label">Output &amp; Visuals</div>
@@ -94,6 +118,8 @@
                 <option value="Markdown document">Markdown doc</option>
                 <option value="Figma design spec">Figma spec</option>
                 <option value="Midjourney image">Midjourney image</option>
+                <option value="Stable Diffusion prompt">Stable Diffusion</option>
+                <option value="DALL-E image">DALL-E image</option>
               </select>
             </div>
 
@@ -232,7 +258,7 @@
           <div class="empty-icon">⚡</div>
           <div class="empty-title">Ready to forge</div>
           <div class="empty-sub">
-            Write your prompt on the left, configure your options,
+            Write your prompt, pick a target model, configure options,
             then hit <strong style="color:var(--violet2)">Forge Prompt</strong>.
             Your enhanced prompt will appear here.
           </div>
